@@ -1,114 +1,54 @@
-# Blueberry LLM 🫐
+# Blueberry LLM
 
-A Mixture of Experts (MoE) language model implementation.
-
-**Goal: Make LLM training accessible to everyone** - anyone, regardless of technical background, can train SOTA language models on any GPU setup (1-1M GPUs) with automatic best settings and hardware optimization to create state of the art LLM.
+**Open Superintelligence Lab** - Open research for everyone. We publish all of our research for the sake of accelerating science. Learn real AI research from a real research lab.
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/Open-Superintelligence-Lab/blueberry-llm
-cd blueberry-llm
-chmod +x setup.sh
-./setup.sh
-python train.py
+pip install -r requirements.txt
+
+python train_moe.py
 ```
 
-Try it on [Google Colab](https://colab.research.google.com/drive/1UE82keuNStPPaeCF50zSgXVHWiywo_pm?usp=sharing)
+## About
 
-```bash
-# Quick test with 500 steps (fast validation)
-# python core/train.py --config dev --max-steps 500
-# I think this doesn't work, line above
+Purpose of this repository is to research better, faster, smarter LLMs.
 
-# Use Megatron for distributed training (optional)
-python core/train_auto.py --use-megatron
-```
+This repository contains cutting-edge language model experiments and architectures. We believe scientists do their best work when given freedom to explore, so this is a space for your independent research and discovery.
 
-Integrates **NVIDIA's Megatron-LM** for massive GPU cluster training, native PyTorch used for smaller setups. Manual choice still needed, more testing needed.
+Fork this repository, create a new experiment in `experiments/` folder, then create a pull request to merge it back.
 
-## 🖥️ Autotuned GPU Setups
+## Experiments
 
-Blueberry LLM automatically detects your hardware and optimizes configuration for maximum performance:
+| Experiment | Researcher | Research Question | Key Findings |
+|------------|-----------|-------------------|--------------|
+| [Exp1: DSA + GDN Hybrid](experiments/exp1_dsa_gdn_hybrid/) | Vuk Rosić [YouTube](https://www.youtube.com/channel/UC7XJj9pv_11a11FUxCMz15g) [GitHub](https://github.com/vukrosic) | 1. Can replacing full attention with DeepSeek Sparse Attention (DSA) improve the efficiency and performance of a hybrid attention architecture that combines full attention and Gated DeltaNet (GDN)? <br><br> 2. Which combination of attention mechanisms across layers produces the best efficiency-performance tradeoff: (1) Full Attention + GDN, (2) DSA + GDN, (3) DSA only, or (4) Full Attention only? |1. Trains faster in the beginning, but full attention seems to surpass it with more training. Future work is to investigate this further. <br><br> 2. Currently L → F → F → L (Gated Deltanet → Full Attention → Full Attention → Gated Deltanet). Future work is to investigate this further. |
+| *Your experiments will be added here* |
 
-| GPU | Memory | Status | Auto-Optimization | Notes |
-|-----|--------|--------|------------------|-------|
-| **Tesla T4** (Google Colab) | 16GB | ✅ **Fully Supported** | ✅ Optimized | Max memory utilization (~13-14GB) |
+## Getting Started
 
----
+1. **Fork this repository** - Click the "Fork" button at the top right of this page to create your own copy
+2. Clone your fork: `git clone https://github.com/YOUR-USERNAME/blueberry-llm.git`
+3. Install dependencies: `pip install -r requirements.txt`
+4. Read `CONTRIBUTING.md` for contribution guidelines
+5. Create your own experiment and merge it
+6. Explore the `experiments/` folder for ongoing research and inspiration
+7. Once you finish with your research, create a pull request to merge it back to this repo
 
-This is an **open research project** - we encourage everyone to fork the project, run experiments, and submit pull requests with improvements.
+## Philosophy
 
-## 📁 Project Structure
+We don't prescribe what to research. Instead, we provide:
+- Freedom to explore interesting ideas
+- Infrastructure to test hypotheses
+- A collaborative environment for learning
 
-```
-blueberry-llm/
-├── 📁 core/                    # Main functionality
-│   ├── train.py               # Main training script
-│   ├── train_auto.py          # Auto-configuration training
-│   ├── inference.py           # Model inference
-│   └── auto_config.py         # Auto-configuration logic
-├── 📁 models/                 # Neural network components
-├── 📁 data/                   # Data pipeline
-├── 📁 optimizers/             # Advanced optimizers
-├── 📁 training/               # Training infrastructure
-├── 📁 ops/                    # GPU-adaptive operations
-├── 📁 system/                 # Hardware detection
-├── 📁 configs/                # Configuration management
-├── 📁 tests/                  # Testing and examples
-├── 📁 docs/                   # Documentation
-└── 📁 legacy/                 # Legacy files for reference
-```
+## Structure
 
-## 🚀 Usage
-
-### Training
-```bash
-# Auto-configured training (recommended)
-python train.py
-
-# Quick test with 500 steps (fast validation)
-python core/train.py --config dev --max-steps 500
-
-# Manual configuration
-python core/train.py --config dev
-python core/train.py --d-model 768 --n-layers 12
-```
-
-### Inference
-```bash
-# Generate text from trained model
-python inference.py "Your prompt here"
-
-# Interactive mode
-python inference.py --interactive
-```
-
-### Testing
-```bash
-# Run GPU-adaptive system tests
-python test.py
-
-# Run integration examples
-python tests/example_integration.py
-```
-
-## Research Questions
-
-- Can we achieve better parameter efficiency with sparse expert activation?
-- Can we improve expert routing? How does load balancing affect model performance and convergence?
-
-## Engineering Questions
-- Should we make it auto detect number and type of GPUs?
-
-## Future Project
-
-Test with [Token Order Prediction](https://github.com/zaydzuhri/token-order-prediction) - "Predicting the Order of Upcoming Tokens Improves Language Modeling"
+- **`experiments/`** - Research experiments with their own documentation
+- **`models/`** - Model architectures and implementations (DeepSeek, Qwen3-Next)
+- **`training/`** - Training scripts and utilities
+- **`configs/`** - Configuration files
 
 ## Contributing
 
-We welcome contributions! Fork the repo, experiment with different architectures, and submit PRs with your findings.
-
-## Vision
-
-Any company or person (even with no technical experience) should be able to download this repository and run it on their GPU setup - from 1 GPU to 1 million GPUs. The system will be able to automatically detect your hardware configuration, tune hyperparameters for optimal performance, and run the best possible training with or without manual configuration from your side.
+See `CONTRIBUTING.md` for guidelines on how to contribute to this project.

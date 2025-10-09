@@ -2,8 +2,9 @@ datasets
 transformers
 torchtune
 torchao
+matplotlib
+# lm-eval
 
-# Megatron
-megatron-core
+# Single T4 GPU training
 # tensorstore
 # zarr
