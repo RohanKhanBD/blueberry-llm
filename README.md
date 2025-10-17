@@ -23,17 +23,22 @@ Fork this repository, create a new experiment in `experiments/` folder, then cre
 > Some of the experiments below are validated on a specific git tag. 
 > Later commits may introduce breaking changes. 
 > If experiment includes *Validated Tag* field, it may still run, but if it doesn't, use: `git checkout <tag-name>`
+> 
+> **Latest stable tag**: `experiments-v2.0` (for Exp6-8)
 
 *Your experiments will be added here*
 
 ### [Exp7: Hybrid DeltaNet Architecture Ablation](experiments/exp7_hybrid_deltanet_ablation/)
+- **Validated Tag**: `git checkout experiments-v2.0`
 - Comprehensive ablation of 13 architectures (0-100% attention) finding that Hybrid Sparse 17% (2 attention layers at positions 5, 11) performs 27% better than pure Transformer and 8% better than pure DeltaNet.
 
 ### [Exp6: Gated DeltaNet Training](experiments/exp6_gated_deltanet_training/)
+- **Validated Tag**: `git checkout experiments-v2.0`
 - Learning rate ablation study for Gated DeltaNet architecture, finding 1e-3 optimal for 188M parameter model. Also possible to train coherent LLM in 30-60 min on H100.
 
 ### [Exp5: Batch Size vs Sequence Length](experiments/exp5_batch_vs_seqlen_ablation/)
 - **Researcher**: Vuk Rosić ([YouTube](https://www.youtube.com/channel/UC7XJj9pv_11a11FUxCMz15g), [GitHub](https://github.com/vukrosic))
+- **Validated Tag**: `git checkout experiments-v2.0`
 - **Research Question**: Should you use big batches with short sequences, or small batches with long sequences?
 - **Key Findings**: A balanced approach to batch size and sequence length (e.g., 26x1024) is most effective. It outperforms both large batches with short sequences and small batches with long sequences. While large batches may seem to train faster, longer sequences ultimately provide better learning.
 - **Tutorials**: [📺 Video](https://youtu.be/bu5dhaLmr7E), [📝 Article](https://opensuperintelligencelab.com/learn/large-language-models/batch-size-vs-sequence-length/)
