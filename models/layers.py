@@ -118,25 +118,41 @@ class MultiHeadLatentAttention(nn.Module):
 
 class MoETransformerBlock(nn.Module):
     """Transformer block with MoE"""
+
     def __init__(
         self,
         d_model: int,
         n_heads: int,
         d_ff: int,
+        use_mla: bool,
+        qk_rope_dim: int | None,
+        qk_nope_dim: int | None,
+        kv_lora_rank: int | None,
+        v_dim: int | None,
         max_seq_len: int,
         num_experts: int = 8,
         top_k: int = 2,
-        dropout: float = 0.1
+        dropout: float = 0.1,
     ):
         super().__init__()
 
         # Attention layer
-        self.attention = MultiHeadAttention(d_model, n_heads, max_seq_len, dropout)
+        if use_mla:
+            self.attention = MultiHeadLatentAttention(
+                d_model,
+                n_heads,
+                qk_rope_dim,
+                qk_nope_dim,
+                kv_lora_rank,
+                v_dim,
+                max_seq_len,
+                dropout,
+            )
+        else:
+            self.attention = MultiHeadAttention(d_model, n_heads, max_seq_len, dropout)
 
         # MoE layer
-        self.feed_forward = MixtureOfExperts(
-            d_model, d_ff, num_experts, top_k, dropout
-        )
+        self.feed_forward = MixtureOfExperts(d_model, d_ff, num_experts, top_k, dropout)
 
         # Normalization layers
         self.norm1 = nn.RMSNorm(d_model)
