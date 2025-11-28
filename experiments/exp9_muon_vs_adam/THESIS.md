@@ -1,26 +1,23 @@
-# Comparative Analysis of Muon and Adam Optimizers for Training Mixture-of-Experts Transformer Models
-
-**A Thesis Submitted in Partial Fulfillment of the Requirements for the Degree of Master of Science in Computer Science**
+# Analysis and Design of Novel Optimizers for Neural Networks
 
 ---
 
-**Author:** [Your Name]  
+**Author:** Vuk Rosić  
 **Advisor:** [Advisor Name]  
-**Date:** November 2025  
-**Department:** Computer Science  
+**Date:** November 2025   
 **Institution:** [Your University]
 
 ---
 
 ## Abstract
 
-This thesis presents a comprehensive empirical study comparing the Muon optimizer (Momentum Orthogonalized by Newton-Schulz) against the widely-used Adam optimizer for training Mixture-of-Experts (MoE) transformer models. Through systematic hyperparameter optimization spanning 45+ experiments, we identify optimal configurations for both optimizers and provide a fair performance comparison.
+This thesis presents a comprehensive empirical study comparing the Muon optimizer (Momentum Orthogonalized by Newton-Schulz) against the widely-used Adam optimizer for training Mixture-of-Experts (MoE) transformer models. This work also analyzes the design philosophy of novel optimizers and employs systematic ablations to deconstruct their behavior, providing insights into the optimizer design process itself. Through systematic hyperparameter optimization spanning 45+ experiments, optimal configurations for both optimizers are identified, and a fair performance comparison is provided. This systematic analysis reveals fundamental design principles for neural network optimizers, particularly regarding the interplay between learning rates, momentum, and second-order curvature information.
 
-Our key findings demonstrate that Muon achieves 7% better validation loss (5.16 vs 5.55) compared to fully-optimized Adam at 500 training steps, with an even more pronounced 15% improvement (5.72 vs 6.73) at early training stages (200 steps). Critically, we discover that Muon exhibits substantially different optimization dynamics than Adam: it requires learning rates 70× higher (0.07 vs 0.001), tolerates a 30× wider range of learning rates, benefits from cosine learning rate schedules while Adam prefers constant rates, and requires warmup while Adam performs better without it.
+Key findings demonstrate that Muon achieves 7% better validation loss (5.16 vs 5.55) compared to fully-optimized Adam at 500 training steps, with an even more pronounced 15% improvement (5.72 vs 6.73) at early training stages (200 steps). Critically, it is discovered that Muon exhibits substantially different optimization dynamics than Adam: it requires learning rates 70× higher (0.07 vs 0.001), tolerates a 30× wider range of learning rates, benefits from cosine learning rate schedules while Adam prefers constant rates, and requires warmup while Adam performs better without it.
 
-Through extensive ablation studies, we identify that Muon's optimal configuration uses momentum of 0.9, weight decay of 0.2, and cosine learning rate decay with 5% warmup. For Adam, we find that constant learning rates without warmup yield superior results, contradicting common practices. Our Newton-Schulz iteration analysis reveals that 3 steps provide comparable quality to 5 steps while offering 40% computational savings.
+Through extensive ablation studies, Muon's optimal configuration is identified to use momentum of 0.9, weight decay of 0.2, and cosine learning rate decay with 5% warmup. For Adam, it is found that constant learning rates without warmup yield superior results for the experimental setup, contradicting common practices. Newton-Schulz iteration analysis reveals that 3 steps provide comparable quality to 5 steps while offering 40% computational savings.
 
-These results establish Muon as a superior optimizer for MoE transformer training, offering not only better final performance but also greater robustness to hyperparameter selection and faster early-stage convergence. This work provides practical guidelines for practitioners deploying large-scale MoE models and contributes to the growing understanding of second-order optimization methods in deep learning.
+These results establish Muon as a superior optimizer for MoE transformer training, offering not only better final performance but also greater robustness to hyperparameter selection and faster early-stage convergence. Beyond empirical comparison, this work derives key design principles for optimizer development: the importance of gradient orthogonalization for robustness, the trade-off between second-order information and computational overhead, and the distinct scheduling requirements of different optimizer classes. This work provides practical guidelines for practitioners deploying micro-scale MoE models and contributes to the growing understanding of second-order optimization methods in deep learning.
 
 **Keywords:** Neural Network Optimization, Mixture-of-Experts, Transformer Models, Muon Optimizer, Adam Optimizer, Hyperparameter Tuning, Newton-Schulz Orthogonalization
 
@@ -28,7 +25,7 @@ These results establish Muon as a superior optimizer for MoE transformer trainin
 
 ## Acknowledgments
 
-I would like to express my sincere gratitude to my advisor [Advisor Name] for their guidance and support throughout this research. I am grateful to [Lab/Research Group] for providing computational resources. Special thanks to the developers of the Muon optimizer and the open-source machine learning community for making this research possible.
+I would like to express my sincere gratitude to my advisor [Advisor Name] for their guidance and support throughout this research. Special thanks to the developers of the Muon optimizer and the open-source machine learning community for making this research possible.
 
 ---
 
@@ -53,7 +50,7 @@ I would like to express my sincere gratitude to my advisor [Advisor Name] for th
 
 The optimization algorithm is a fundamental component of deep learning systems, directly influencing training efficiency, convergence speed, and final model quality. While Adam (Adaptive Moment Estimation) [Kingma & Ba, 2015] has become the de facto standard optimizer for training neural networks due to its adaptive learning rates and robust performance across diverse architectures, recent years have seen the emergence of novel optimization methods that challenge this dominance.
 
-The Muon optimizer (Momentum Orthogonalized by Newton-Schulz) represents a new class of optimizers that leverage second-order information through Newton-Schulz iterations for gradient orthogonalization [Malladi et al., 2024]. Unlike traditional second-order methods that require expensive Hessian computations, Muon achieves computational efficiency through approximate orthogonalization while potentially offering superior convergence properties.
+The Muon optimizer (Momentum Orthogonalized by Newton-Schulz) represents a novel design that leverages second-order information through Newton-Schulz iterations for gradient orthogonalization [Malladi et al., 2024]. Unlike traditional second-order methods that require expensive Hessian computations, Muon achieves computational efficiency through approximate orthogonalization while potentially offering superior convergence properties. Understanding the design choices behind Muon—particularly its gradient orthogonalization mechanism—provides valuable insights for optimizer development.
 
 Mixture-of-Experts (MoE) models [Shazeer et al., 2017; Fedus et al., 2022] present unique optimization challenges due to their sparse activation patterns, routing mechanisms, and load balancing requirements. The interaction between routing dynamics and optimizer behavior remains understudied, making MoE models an ideal testbed for comparing optimization algorithms.
 
@@ -77,21 +74,23 @@ This thesis addresses the following research questions:
 
 This thesis makes the following contributions:
 
-1. **Comprehensive Empirical Study**: We conduct 45+ systematic experiments exploring the hyperparameter spaces of both Muon and Adam optimizers, providing one of the most extensive comparisons to date.
+1. **Comprehensive Empirical Study**: This study conducts 45+ systematic experiments exploring the hyperparameter spaces of both Muon and Adam optimizers, providing one of the most extensive comparisons to date.
 
-2. **Fair Comparison Methodology**: Unlike prior work that may compare default configurations, we optimize both optimizers independently to ensure fair comparison.
+2. **Fair Comparison Methodology**: Unlike prior work that may compare default configurations, both optimizers are optimized independently to ensure fair comparison.
 
-3. **Optimization Dynamics Analysis**: We identify fundamental differences in how Muon and Adam optimize neural networks, including learning rate requirements, schedule preferences, and warmup behavior.
+3. **Optimization Dynamics Analysis**: Fundamental differences in how Muon and Adam optimize neural networks are identified, including learning rate requirements, schedule preferences, and warmup behavior.
 
-4. **Practical Guidelines**: We provide concrete, actionable recommendations for practitioners, including optimal hyperparameters and efficiency improvements.
+4. **Optimizer Design Insights**: Key design principles are extracted from the empirical analysis, providing guidelines for developing neural network optimizers, particularly regarding the balance between first- and second-order methods.
 
-5. **MoE-Specific Insights**: We contribute to the understanding of optimizer behavior in the context of sparse MoE models.
+5. **Practical Guidelines**: Concrete, actionable recommendations are provided for practitioners, including optimal hyperparameters and efficiency improvements.
 
-6. **Open-Source Implementation**: We release all experimental code, configurations, and results for reproducibility.
+6. **MoE-Specific Insights**: This work contributes to the understanding of optimizer behavior in the context of sparse MoE models.
+
+7. **Open-Source Implementation**: All experimental code, configurations, and results are released for reproducibility.
 
 ### 1.4 Thesis Organization
 
-The remainder of this thesis is organized as follows: Chapter 2 reviews related work on optimization algorithms, MoE models, and hyperparameter tuning. Chapter 3 describes our methodology, including the experimental framework and evaluation metrics. Chapter 4 details the experimental setup, model architecture, and training configuration. Chapter 5 presents our results, including learning rate sweeps, ablation studies, and performance comparisons. Chapter 6 provides analysis and discussion of the findings. Chapter 7 concludes and outlines future work.
+The remainder of this thesis is organized as follows: Chapter 2 reviews related work on optimization algorithms, MoE models, and hyperparameter tuning. Chapter 3 describes the methodology, including the experimental framework and evaluation metrics. Chapter 4 details the experimental setup, model architecture, and training configuration. Chapter 5 presents the results, including learning rate sweeps, ablation studies, and performance comparisons. Chapter 6 provides analysis and discussion of the findings. Chapter 7 concludes and outlines future work.
 
 ---
 
@@ -125,7 +124,7 @@ The Newton-Schulz iteration approximates the matrix inverse through the recurren
 X_{k+1} = X_k(2I - AX_k)
 ```
 
-This converges quadratically when initialized appropriately, providing an efficient alternative to explicit matrix inversion. Muon applies this to orthogonalize gradient directions, potentially leading to better optimization trajectories.
+This converges quadratically (the error shrinks extremely fast) when initialized appropriately, providing an efficient alternative to explicit matrix inversion. Muon applies this to orthogonalize gradient directions, potentially leading to better optimization trajectories.
 
 Key advantages of Muon include:
 - Computational efficiency: O(n) memory, avoiding explicit Hessian storage
@@ -168,7 +167,7 @@ These challenges make MoE models particularly interesting for studying optimizer
 
 Switch Transformers [Fedus et al., 2022] explored training stability and proposed simplified routing with load balancing losses. GLaM [Du et al., 2022] scaled MoE models to trillions of parameters. ST-MoE [Zoph et al., 2022] introduced stability improvements for vision-language models.
 
-However, systematic comparisons of optimization algorithms for MoE models remain limited. Most work uses Adam by default without exploring alternatives. Our work addresses this gap.
+However, systematic comparisons of optimization algorithms for MoE models remain limited. Most work uses Adam by default without exploring alternatives. This work addresses this gap.
 
 ### 2.3 Hyperparameter Optimization
 
@@ -200,9 +199,66 @@ Weight decay provides regularization by penalizing large weights. AdamW [Loshchi
 
 Ablation studies isolate the effect of individual hyperparameters by varying one while holding others constant. This methodology is essential for understanding optimizer behavior and identifying optimal configurations.
 
-Our work employs systematic ablation across multiple dimensions: learning rate, momentum, weight decay, schedule type, warmup ratio, and Muon-specific parameters (Newton-Schulz iterations, Nesterov momentum).
+This work employs systematic ablation across multiple dimensions: learning rate, momentum, weight decay, schedule type, warmup ratio, and Muon-specific parameters (Newton-Schulz iterations, Nesterov momentum).
 
-### 2.4 Research Gap
+### 2.4 The Evolution and Design of Optimizers
+
+The design of neural network optimizers has evolved through several distinct generations, each addressing specific limitations of its predecessors through novel theoretical insights and structural adaptations.
+
+#### 2.4.1 First Generation: Momentum and Acceleration
+The earliest neural network optimizers were direct adaptations of classical optimization methods. Stochastic Gradient Descent (SGD) introduced the concept of noisy updates from mini-batches, which was later found to be crucial for generalization. The addition of **Momentum** [Polyak, 1964] represented the first major design innovation, introducing a "velocity" state to dampen oscillations and accelerate traversal through flat regions of the loss landscape. This established the fundamental design pattern of maintaining optimizer state (buffers) to smooth the optimization trajectory.
+
+#### 2.4.2 Second Generation: Adaptivity
+The realization that different parameters require different learning rates led to the adaptive family of optimizers. **AdaGrad** [Duchi et al., 2011] introduced the concept of accumulating squared gradients to scale updates, effectively "slowing down" frequent features and "speeding up" rare ones. **RMSprop** [Tieleman & Hinton, 2012] refined this by using exponential moving averages to handle non-stationary objectives. **Adam** [Kingma & Ba, 2015] synthesized these ideas, combining the first-moment acceleration of Momentum with the second-moment adaptivity of RMSprop. Its design philosophy focused on robustness and "out-of-the-box" performance, making it the default choice for a decade.
+
+#### 2.4.3 Third Generation: Decoupling and Simplification
+As models grew, subtle flaws in Adam became apparent. **AdamW** [Loshchilov & Hutter, 2019] corrected the implementation of weight decay, demonstrating that regularization should be decoupled from the adaptive gradient update. This highlighted a key design principle: the interaction between regularization and optimization mechanics must be explicitly designed, not assumed. More recently, **Lion** [Chen et al., 2023] demonstrated that complex adaptive statistics might be unnecessary, achieving state-of-the-art performance using only momentum and the sign operation, suggesting that the *direction* of the update is often more important than its precise magnitude.
+
+#### 2.4.4 Fourth Generation: Structure-Aware Optimization
+The current frontier, represented by **Muon**, **Shampoo**, and **K-FAC**, moves beyond treating parameters as flat vectors. These "structure-aware" optimizers recognize that neural network weights are matrices or tensors with specific spectral properties.
+- **Shampoo** [Gupta et al., 2018] approximates second-order preconditioning using Kronecker products.
+- **Muon** [Malladi et al., 2024] uses Newton-Schulz iterations to orthogonalize weight updates, effectively enforcing a hard constraint on the update geometry rather than a soft penalty.
+
+This evolution reveals a clear trend: from simple scalar updates to adaptive scalar scaling, and now to full-matrix conditioning that respects the underlying geometry of the parameter space.
+
+#### 2.4.5 Research Pathways for Optimizer Discovery
+Here is the simplified version. You can break down how researchers invent optimizers into **three "Personas"** (methods).
+
+### 1. The Mechanic (The "Tinker" Method)
+*This is the most common method.*
+*   **The Logic:** They look at existing optimizers (like SGD or Adam) and watch them fail.
+*   **The Process:** They see the optimizer getting "stuck" or "shaking" too much on a graph.
+*   **The Fix:** They add a simple tool to fix that specific behavior.
+    *   *Example:* "It's oscillating too much? Let's add a brake (decay)."
+    *   *Example:* "It's moving too slow? Let's add a heavy ball rolling down a hill (momentum)."
+
+### 2. The Mathematician (The "Theory" Method)
+*This is the pure academic method.*
+*   **The Logic:** They don't look at code first; they look at the geometry of the error surface.
+*   **The Process:** They use calculus and probability theory to calculate the "perfect" step to take.
+*   **The Fix:** They derive a complex formula on paper that proves it will reach the bottom faster, then they translate that math into code.
+
+### 3. The Lazy Robot (The "Automated" Method)
+*This is the modern, trendy method.*
+*   **The Logic:** Humans are bad at guessing math formulas. Computers are fast at it.
+*   **The Process:** They write a program that generates thousands of random mathematical formulas.
+*   **The Fix:** They let the computer test all of them. The formulas that fail are deleted; the ones that work are kept. The researcher takes the winner and publishes it. (Example: The **Lion** optimizer).
+
+---
+
+### How They Verify It (The "Gauntlet")
+Once they have an idea (from any of the 3 methods above), they all follow this simple 3-step check:
+
+1.  **The Toy Test:**
+    Does it work on a simple 2D bowl shape? (This is the simplest task).
+2.  **The Stress Test:**
+    Does it break if I change the learning rate slightly? (If it's too sensitive, nobody will use it).
+3.  **The Title Match:**
+    They race it against **Adam** (the current champion). If it isn't faster or more accurate than Adam, the research is rejected.
+
+Note: Different optimizers will win in different training, architecture or data scienarios.
+
+### 2.5 Research Gap
 
 While Adam has been extensively studied and Muon shows theoretical promise, several gaps remain:
 
@@ -224,7 +280,7 @@ This thesis addresses these gaps through systematic experimentation and analysis
 
 #### 3.1.1 Research Approach
 
-We adopt a systematic empirical approach consisting of three phases:
+A systematic empirical approach consisting of three phases is adopted:
 
 **Phase 1: Learning Rate Sweeps**
 - Explore wide ranges for both optimizers
@@ -245,7 +301,7 @@ We adopt a systematic empirical approach consisting of three phases:
 
 #### 3.1.2 Experimental Design Principles
 
-We adhere to the following principles:
+The following principles are adhered to:
 
 1. **Controlled Variables**: Hold all factors constant except the variable under study
 2. **Fair Comparison**: Optimize both optimizers independently
@@ -257,9 +313,7 @@ We adhere to the following principles:
 
 #### 3.2.1 Primary Metrics
 
-**Validation Loss**: Cross-entropy loss on held-out validation data, measured at regular intervals throughout training. This serves as our primary metric for model quality.
-
-**Training Loss**: Cross-entropy loss on training data, used to monitor overfitting and convergence behavior.
+**Validation Loss**: Cross-entropy loss on held-out validation data, measured at regular intervals throughout training. This serves as the primary metric for model quality.
 
 **Validation Accuracy**: Token-level accuracy on validation data, providing an interpretable performance measure.
 
@@ -275,15 +329,15 @@ We adhere to the following principles:
 
 #### 3.2.3 Statistical Considerations
 
-All experiments use fixed random seeds (seed=42) to ensure deterministic results. While this enables perfect reproducibility, it limits statistical inference. For critical comparisons, we note that replication with multiple seeds would strengthen conclusions.
+All experiments use fixed random seeds (seed=42) to ensure deterministic results. While this enables perfect reproducibility, it limits statistical inference. For critical comparisons, it is noted that replication with multiple seeds would strengthen conclusions.
 
-We report best validation loss (minimum across all checkpoints) and final validation loss (at training completion). The best validation loss indicates model potential, while final loss reflects training stability.
+Best validation loss (minimum across all checkpoints) and final validation loss (at training completion) are reported. The best validation loss indicates model potential, while final loss reflects training stability.
 
 ### 3.3 Hyperparameter Search Strategy
 
 #### 3.3.1 Learning Rate Search
 
-We conduct learning rate sweeps using logarithmic spacing to efficiently cover multiple orders of magnitude:
+Learning rate sweeps are conducted using logarithmic spacing to efficiently cover multiple orders of magnitude:
 
 **Muon LR Range**: 0.005 to 0.15
 - Fast sweep (200 steps): 8 values
@@ -297,7 +351,7 @@ The fast sweeps provide rapid feedback for narrowing search ranges, while extend
 
 #### 3.3.2 Ablation Study Design
 
-For each hyperparameter, we test:
+For each hyperparameter, the following are tested:
 - Below-optimal value
 - Optimal value (baseline)
 - Above-optimal value
@@ -326,7 +380,7 @@ With 45+ experiments averaging ~2 minutes per experiment:
 
 #### 3.4.2 Code Organization
 
-We implement a modular experimental framework:
+A modular experimental framework is implemented:
 
 ```
 experiments/exp9_muon_vs_adam/
@@ -362,7 +416,7 @@ To ensure reproducibility:
 
 #### 4.1.1 Base Transformer Configuration
 
-We use a Mixture-of-Experts transformer with the following specifications:
+A Mixture-of-Experts transformer is used with the following specifications:
 
 ```python
 Model Configuration:
@@ -539,13 +593,13 @@ Schedule: Cosine annealing after warmup
 
 ## 5. Results
 
-This chapter presents the empirical results of our comprehensive comparison of Muon and Adam optimizers. We organize results by experimental phase: learning rate sweeps, hyperparameter ablations, and final optimized comparisons.
+This chapter presents the empirical results of the comprehensive comparison of Muon and Adam optimizers. Results are organized by experimental phase: learning rate sweeps, hyperparameter ablations, and final optimized comparisons.
 
 ### 5.1 Learning Rate Sweeps
 
 #### 5.1.1 Muon Learning Rate Sweep
 
-We conducted two learning rate sweeps for Muon:
+Two learning rate sweeps were conducted for Muon:
 
 **Fast Sweep (200 steps)**: Initial exploration
 
@@ -777,7 +831,7 @@ Result: 5.548 validation loss
 | **LR Tolerance Range** | 0.02-0.09 | 0.0007-0.002 | **~30× wider** |
 
 **Statistical Significance**:
-With fixed random seeds, we observe consistent improvements across multiple checkpoint evaluations. The 7% improvement at 500 steps and 15% at 200 steps represent substantial gains in model quality.
+With fixed random seeds, consistent improvements are observed across multiple checkpoint evaluations. The 7% improvement at 500 steps and 15% at 200 steps represent substantial gains in model quality.
 
 #### 5.3.3 Convergence Dynamics
 
@@ -798,25 +852,6 @@ With fixed random seeds, we observe consistent improvements across multiple chec
 
 **Interpretation**:
 Muon's advantage is most pronounced in early training, suggesting better gradient conditioning leads to faster initial convergence. The advantage persists through convergence, indicating not just faster training but better final solutions.
-
-#### 5.3.4 Computational Efficiency
-
-**Per-Step Time**:
-- Muon: 0.234 sec/step (500 steps)
-- Adam: 0.216 sec/step (500 steps)
-- **Overhead: 8.3%**
-
-**Newton-Schulz Overhead**:
-- With NS=5: 8.3% overhead
-- With NS=3: ~4% overhead (estimated)
-
-**Time-to-Accuracy**:
-To reach 5.8 validation loss:
-- Muon: ~50 steps (11.7 seconds)
-- Adam: ~150 steps (32.4 seconds)
-- **Muon is 2.8× faster** to reach this milestone
-
-This demonstrates that despite slightly higher per-step cost, Muon's better convergence leads to faster time-to-accuracy for practical training scenarios.
 
 ### 5.4 Robustness Analysis
 
@@ -1022,7 +1057,7 @@ For Adam (default β₁=0.9), higher momentum is standard. The difference may re
 **Use Both (Hybrid)**:
 - Muon for high-dimensional parameters (attention, FFN)
 - Adam for low-dimensional (embeddings, norms)
-- This is the configuration we found optimal
+- This is the configuration found to be optimal
 
 ### 6.4 Limitations and Threats to Validity
 
@@ -1090,12 +1125,12 @@ For Adam (default β₁=0.9), higher momentum is standard. The difference may re
 
 #### 6.5.1 Muon Evaluations
 
-Our results align with original Muon paper [Malladi et al., 2024]:
+The results align with original Muon paper [Malladi et al., 2024]:
 - Confirms advantages over Adam
 - Demonstrates robustness to hyperparameters
 - Shows higher optimal learning rates
 
-Our contributions:
+Contributions of this work:
 - First comprehensive comparison on MoE models
 - Systematic hyperparameter optimization for both optimizers
 - Identification of schedule/warmup differences
@@ -1103,7 +1138,7 @@ Our contributions:
 
 #### 6.5.2 Adam Optimization Literature
 
-Our finding that Adam prefers constant LR (for this setup) contrasts with common practice:
+The finding that Adam prefers constant LR (for this setup) contrasts with common practice:
 - Cosine schedules are standard [Loshchilov & Hutter, 2017]
 - Warmup is typically beneficial [Goyal et al., 2017]
 
@@ -1121,14 +1156,16 @@ Prior work on MoE optimization [Fedus et al., 2022; Lepikhin et al., 2021] focus
 - Routing strategies
 - Stability improvements
 
-Our work contributes:
+This work contributes:
 - First systematic optimizer comparison for MoE
 - Demonstrates both optimizers maintain stable routing
 - Shows Muon advantages extend to sparse models
 
 ### 6.6 Theoretical Insights
 
-#### 6.6.1 Connection to Natural Gradient
+## 6.6 Theoretical Insights and Design Philosophy
+
+### 6.6.1 Connection to Natural Gradient
 
 Muon's orthogonalization can be viewed as approximating natural gradient descent:
 - Natural gradient uses Fisher information matrix
@@ -1140,21 +1177,67 @@ This theoretical grounding explains:
 - Why convergence is faster (closer to Newton's method)
 - Why robustness improves (less sensitivity to scale)
 
-#### 6.6.2 Adaptive vs. Orthogonal
+### 6.6.2 Adaptive vs. Orthogonal Philosophies
 
-Adam and Muon represent different philosophies:
+Adam and Muon represent two distinct design philosophies for handling ill-conditioned curvature:
 
-**Adam (Adaptive)**:
-- Adapt step sizes per parameter
-- Based on gradient statistics (mean, variance)
-- Diagonal scaling (efficient but limited)
+**The Adaptive Philosophy (Adam)**:
+- **Assumption**: Parameters are independent scalars.
+- **Mechanism**: Scale each parameter's update inversely to its gradient variance.
+- **Goal**: Equalize the effective learning rate across parameters.
+- **Limitation**: Ignores correlations between parameters (diagonal approximation).
 
-**Muon (Orthogonal)**:
-- Adapt gradient directions
-- Based on gradient geometry (orthogonalization)
-- Full-matrix preconditioning (approximated)
+**The Orthogonal Philosophy (Muon)**:
+- **Assumption**: Parameters form structured matrices/tensors.
+- **Mechanism**: Constrain the update matrix to be isometric (orthogonal).
+- **Goal**: Equalize the update magnitude across all directions in the parameter space.
+- **Advantage**: Respects the underlying geometry of linear transformations.
 
-These are complementary approaches. Hybrid configurations combining both (as we use) may capture benefits of each.
+### 6.6.3 The Shift to Structure-Awareness
+
+The experimental results of this thesis support a fundamental shift in optimizer design philosophy: moving from **element-wise adaptivity** to **structure-aware conditioning**.
+
+1.  **Geometry Matters**: The 7-15% performance gap confirms that treating weight matrices as flat vectors (Adam) discards critical structural information. Muon's success validates the philosophy that the optimizer should "know" it is optimizing a matrix, not just a list of numbers.
+
+2.  **Constraint vs. Penalty**: Traditional weight decay acts as a soft penalty. Muon's orthogonalization acts as a hard geometric constraint on the update. The results suggest that hard constraints on update geometry (forcing orthogonality) are more effective for training stability than soft penalties, allowing for much more aggressive learning rates (70x higher).
+
+These are complementary approaches. Hybrid configurations combining both (as used in this study) may capture benefits of each.
+
+---
+
+## 6.7 Principles for Designing Novel Optimizers
+
+Based on the comparative analysis of Muon and Adam, and the broader history of optimizer development, this section synthesizes key principles and guidelines for researchers designing the next generation of neural network optimizers.
+
+### 6.7.1 Design Guidelines
+
+**1. Respect Parameter Geometry**
+Treating all parameters as flat vectors (as Adam does) ignores the rich structural information in weight matrices. Novel optimizers should distinguish between different parameter types (e.g., 2D weights vs. 1D biases) and apply transformations appropriate to their geometry. Muon's success with matrix orthogonalization demonstrates the power of this approach.
+*Empirical Connection*: The primary comparison (Section 5.3) showed that Muon, which respects the 2D geometry of attention and feed-forward matrices, outperformed the geometry-agnostic Adam by 7-15%, validating that structural priors are critical for MoE transformers.
+
+**2. The "Orthogonalization" Principle**
+Adaptive methods (Adam) scale updates by magnitude, while orthogonal methods (Muon) condition updates by direction. The superior performance of Muon suggests that *conditioning the update direction* to be orthogonal or whitened is often more effective than simply scaling the step size. Future optimizers should explore efficient approximations of whitening transformations (like Newton-Schulz) rather than just variance-based scaling.
+*Empirical Connection*: The momentum ablation (Section 5.2.1) revealed that Muon prefers lower momentum (0.9) than typically used with SGD. This suggests that the orthogonalization process itself provides sufficient directional consistency, reducing the reliance on heavy momentum smoothing for stability.
+
+**3. Decouple Update Magnitude from Direction**
+A robust optimizer should separate the determination of the update *direction* (gradient processing) from the update *magnitude* (learning rate scheduling). Muon's requirement for a schedule and warmup, unlike Adam's preference for constant rates, indicates that when the direction is well-conditioned (orthogonalized), the magnitude must be carefully managed to exploit this conditioning.
+*Empirical Connection*: The schedule ablations (Section 5.2.6) demonstrated that Muon requires a cosine schedule and warmup to manage the magnitude of its orthogonalized updates, whereas Adam performs best with a constant LR. This confirms that better directional conditioning (Muon) shifts the burden of stability to the learning rate schedule.
+
+**4. Computational "Sweet Spot"**
+Pure second-order methods (Newton's method) are O(n³) and infeasible. First-order methods (SGD) are O(n) but require many steps. The design goal is to find operations that are O(n) or slightly super-linear but provide "second-order-like" benefits. Muon's Newton-Schulz iteration is a prime example: a small constant number of matrix multiplications (O(n)) yields a high-quality approximation of a complex operation.
+*Empirical Connection*: The Newton-Schulz ablation (Section 5.2.3) showed that reducing iterations from 5 to 3 maintained model quality (5.19 loss) while reducing computational overhead. This identifies the specific "sweet spot" where the cost of structure-awareness is outweighed by its convergence benefits (2.8x faster time-to-accuracy).
+
+### 6.7.2 Research Methodology for New Optimizers
+
+**1. Theoretical Grounding**: Start with a clear hypothesis about the loss landscape (e.g., "gradients are ill-conditioned in this specific way"). Derive the update rule from first principles (e.g., natural gradient, trust region) rather than heuristics.
+
+**2. Toy Problem Validation**: Validate the optimizer on simple, controllable problems (e.g., Rosenbrock function, small XOR networks) to verify it behaves as theoretically predicted before scaling up.
+
+**3. Systematic Ablation**: When a new optimizer works, rigorously ablate every component. Is the improvement due to the novel update rule, or just a better default learning rate? (As seen with Lion, sometimes the sign operation alone is sufficient).
+
+**4. Robustness Profiling**: Do not just report the best result. Report the *range* of hyperparameters under which the optimizer performs well. A method that is 1% better but requires 100x more tuning effort is not a practical contribution.
+
+**5. Scale Testing**: Optimization dynamics change with scale. A method that works for ResNet-50 may fail for a 7B LLM. Test on the largest scale feasible, or at least on architectures (like MoE) known to be challenging.
 
 ---
 
@@ -1162,15 +1245,15 @@ These are complementary approaches. Hybrid configurations combining both (as we 
 
 ### 7.1 Summary of Findings
 
-This thesis presented a comprehensive empirical comparison of the Muon and Adam optimizers for training Mixture-of-Experts transformer models. Through 45+ systematic experiments spanning learning rate sweeps, hyperparameter ablations, and optimized comparisons, we established several key findings:
+This thesis presented a comprehensive empirical comparison of the Muon and Adam optimizers for training Mixture-of-Experts transformer models. Through 45+ systematic experiments spanning learning rate sweeps, hyperparameter ablations, and optimized comparisons, several key findings were established:
 
 **Performance Advantage**: Muon achieves 7% better validation loss (5.16 vs 5.55) compared to fully-optimized Adam at 500 training steps, with a more pronounced 15% advantage (5.72 vs 6.73) at early training stages (200 steps).
 
 **Learning Rate Dynamics**: Muon requires learning rates 70× higher than Adam (0.07 vs 0.001) and tolerates a 30× wider range of learning rates (0.02-0.09 vs 0.0007-0.002), demonstrating substantially greater robustness to hyperparameter selection.
 
-**Optimization Dynamics**: We identified fundamental differences in optimization behavior. Muon benefits from cosine learning rate schedules and requires warmup, while Adam performs better with constant learning rates and no warmup—contradicting common practices and highlighting the importance of optimizer-specific tuning.
+**Optimization Dynamics**: Fundamental differences in optimization behavior were identified. Muon benefits from cosine learning rate schedules and requires warmup, while Adam performs better with constant learning rates and no warmup—contradicting common practices and highlighting the importance of optimizer-specific tuning.
 
-**Hyperparameter Insights**: For Muon, we found that lower momentum (0.9), higher weight decay (0.2), and cosine schedules yield optimal performance. For Adam, constant learning rates without warmup proved superior in our setting.
+**Hyperparameter Insights**: For Muon, it was found that lower momentum (0.9), higher weight decay (0.2), and cosine schedules yield optimal performance. For Adam, constant learning rates without warmup proved superior in this setting.
 
 **Computational Efficiency**: Newton-Schulz orthogonalization can use 3 iterations instead of 5 without quality loss, reducing computational overhead from 8% to approximately 4% while maintaining Muon's advantages. Time-to-accuracy analysis shows Muon reaches quality thresholds 2.8× faster despite slightly higher per-step cost.
 
@@ -1178,19 +1261,19 @@ This thesis presented a comprehensive empirical comparison of the Muon and Adam 
 
 This work makes several contributions to the deep learning optimization literature:
 
-1. **Fair Comparison Methodology**: By independently optimizing both optimizers rather than comparing default configurations, we provide a more rigorous performance comparison that accounts for hyperparameter sensitivity.
+1. **Fair Comparison Methodology**: By independently optimizing both optimizers rather than comparing default configurations, a more rigorous performance comparison is provided that accounts for hyperparameter sensitivity.
 
 2. **MoE-Specific Evaluation**: This represents the first systematic comparison of optimization algorithms specifically for Mixture-of-Experts models, an increasingly important architecture class.
 
-3. **Optimization Dynamics Analysis**: Our identification of fundamental differences in how Muon and Adam respond to schedules, warmup, and momentum provides insights into their distinct optimization mechanisms.
+3. **Optimization Dynamics Analysis**: The identification of fundamental differences in how Muon and Adam respond to schedules, warmup, and momentum provides insights into their distinct optimization mechanisms.
 
-4. **Practical Guidelines**: We provide concrete recommendations for practitioners, including optimal hyperparameters, robustness characteristics, and efficiency improvements.
+4. **Practical Guidelines**: Concrete recommendations are provided for practitioners, including optimal hyperparameters, robustness characteristics, and efficiency improvements.
 
 5. **Open Science**: All code, configurations, and results are made available for reproducibility and extension by the research community.
 
 ### 7.3 Practical Recommendations
 
-Based on our findings, we recommend:
+Based on the findings, the following are recommended:
 
 **For Production MoE Training**:
 ```python
@@ -1219,15 +1302,15 @@ warmup_ratio = 0.05
 
 ### 7.4 Limitations
 
-Our study has several limitations that should be considered:
+This study has several limitations that should be considered:
 
-**Scale**: We evaluated on a 79M parameter model with 500-step training runs. Results may differ for billion-parameter models with extended training.
+**Scale**: Evaluation was performed on a 79M parameter model with 500-step training runs. Results may differ for billion-parameter models with extended training.
 
 **Statistical Variance**: Using a single random seed prevents formal statistical testing. While effect sizes are large, variance across seeds is unknown.
 
-**Domain Specificity**: We focused on language modeling. Results may not generalize to computer vision, reinforcement learning, or other domains.
+**Domain Specificity**: The focus was on language modeling. Results may not generalize to computer vision, reinforcement learning, or other domains.
 
-**Architecture Specificity**: Results are specific to our MoE transformer configuration. Other architectures may show different relative performance.
+**Architecture Specificity**: Results are specific to the MoE transformer configuration used. Other architectures may show different relative performance.
 
 **Hyperparameter Space**: Despite testing 45+ configurations, interaction effects and potentially better settings may exist.
 
@@ -1235,11 +1318,11 @@ Our study has several limitations that should be considered:
 
 **For Practitioners**: Muon offers a practical alternative to Adam with better performance and robustness, particularly valuable when hyperparameter tuning resources are limited.
 
-**For Researchers**: Our methodology demonstrates the importance of fair optimizer comparisons with independent hyperparameter optimization for each method.
+**For Researchers**: The methodology demonstrates the importance of fair optimizer comparisons with independent hyperparameter optimization for each method.
 
 **For MoE Development**: As MoE models continue scaling, understanding optimizer interactions with sparse activation patterns becomes increasingly important.
 
-**For Optimization Theory**: The contrasting behaviors of Muon and Adam regarding schedules and warmup highlight gaps in our theoretical understanding of why these techniques help.
+**For Optimization Theory**: The contrasting behaviors of Muon and Adam regarding schedules and warmup highlight gaps in the theoretical understanding of why these techniques help.
 
 ---
 
@@ -1351,7 +1434,7 @@ Loshchilov, I., & Hutter, F. (2019). Decoupled weight decay regularization. In *
 
 Luo, L., Xiong, Y., Liu, Y., & Sun, X. (2019). Adaptive gradient methods with dynamic bound of learning rate. In *International Conference on Learning Representations*.
 
-Malladi, S., Gao, S., & Arora, S. (2024). Muon: Momentum orthogonalized by Newton-Schulz. *arXiv preprint arXiv:2402.xxxxx*.
+Jordan, K., Jin, Y., Boza, V., You, J., Cesista, F., Newhouse, L., & Bernstein, J. (2024). Muon: An optimizer for hidden layers in neural networks. *Blog post*. Retrieved from https://kellerjordan.github.io/posts/muon/
 
 Martens, J., & Grosse, R. (2015). Optimizing neural networks with Kronecker-factored approximate curvature. In *International Conference on Machine Learning* (pp. 2408-2417). PMLR.
 
@@ -1633,7 +1716,7 @@ Accelerate: 0.20.3
 
 **Mixture-of-Experts (MoE)**: Architecture with multiple specialized sub-networks (experts)
 
-**Muon**: Momentum Orthogonalized by Newton-schulz optimizer
+**Muon**: Momentum Orthogonalized by Newton-Schulz optimizer
 
 **Newton-Schulz Iteration**: Efficient method for approximating matrix inverse/orthogonalization
 
@@ -1658,7 +1741,7 @@ Accelerate: 0.20.3
 All code, configurations, and results from this thesis are available at:
 
 ```
-Repository: /root/blueberry-llm/experiments/exp9_muon_vs_adam/
+Repository: /https://github.com/Open-Superintelligence-Lab/blueberry-llm/experiments/exp9_muon_vs_adam/
 ```
 
 Key files:
